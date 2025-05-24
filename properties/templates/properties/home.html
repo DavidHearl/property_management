@@ -1,5 +1,52 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>Property Portfolio Overview</h1>
+
+{% for item in properties %}
+    <div style="border: 1px solid #ccc; padding: 1em; margin-bottom: 1.5em;">
+        <h2>{{ item.property.number }} {{ item.property.street }}</h2>
+
+        <p><strong>Purchase Price:</strong> £{{ item.property.purchase_price }}</p>
+        <p><strong>Current Value:</strong> £{{ item.property.current_value|default:"—" }}</p>
+        <p><strong>Rental Income:</strong> £{{ item.property.rental_income|default:"—" }}/mo</p>
+        <p><strong>Rented:</strong> {{ item.property.is_rented|yesno:"Yes,No" }}</p>
+
+        {% if item.property.mortgages.all %}
+            {% with mortgage=item.property.mortgages.all.0 %}
+                <hr>
+                <p><strong>Mortgage Lender:</strong> {{ mortgage.lender }}</p>
+                <p><strong>Interest Rate:</strong> {{ mortgage.interest_rate }}%</p>
+                <p><strong>Principal:</strong> £{{ mortgage.principal }}</p>
+                <p><strong>Term:</strong> {{ mortgage.term_years }} years</p>
+                <p><strong>Start Date:</strong> {{ mortgage.start_date }}</p>
+            {% endwith %}
+        {% else %}
+            <p><em>No mortgage information</em></p>
+        {% endif %}
+
+        {% if item.capital_gain_net %}
+            <p><strong>Capital Gain (Net, after renovation):</strong> £{{ item.capital_gain_net }}</p>
+        {% endif %}
+
+        {% if item.capital_gain_taxable %}
+            <p><strong>Taxable Gain (80% of gain before renovation):</strong> £{{ item.capital_gain_taxable }}</p>
+        {% endif %}
+
+        {% if item.schedule_entry %}
+            <h4>Mortgage Breakdown ({{ item.schedule_entry.month }}/{{ item.schedule_entry.year }})</h4>
+            <ul>
+                <li><strong>Total Monthly Payment:</strong> £{{ item.schedule_entry.payment }}</li>
+                <li><strong>Interest Paid:</strong> £{{ item.schedule_entry.interest_paid }}</li>
+                <li><strong>Principal Paid:</strong> £{{ item.schedule_entry.principal_paid }}</li>
+                <li><strong>Remaining Balance:</strong> £{{ item.schedule_entry.principal_left }}</li>
+            </ul>
+        {% endif %}
+
+        {% if item.monthly_profit_net %}
+            <p><strong>Rental Profit (after {{ mgmt_fee_percent }}% mgmt fee + {{ tax_percent }}% tax):</strong> £{{ item.monthly_profit_net }}</p>
+        {% endif %}
+    </div>
+{% endfor %}
 
 {% endblock %}
